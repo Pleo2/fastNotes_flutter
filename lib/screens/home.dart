@@ -4,15 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:notes_crud/constants/colors.dart';
 import 'package:notes_crud/models/notes.dart';
+import 'package:notes_crud/screens/edit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Note> filteredNotes = [];
+
   void onSearchTextChange(String searchText) {
     setState(() {
       filteredNotes = sampleNotes
@@ -23,7 +26,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  getRamdomColor() {
+  void deleteNote(int index) {
+    setState(() {
+      Note note = filteredNotes[index];
+      sampleNotes.remove(note);
+      if (filteredNotes.contains(note)) {
+        filteredNotes.removeAt(index);
+      }
+    });
+  }
+
+  Color randomColor() {
     Random random = Random();
     return backgroundColors[random.nextInt(backgroundColors.length)];
   }
@@ -104,12 +117,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 20),
-                    color: getRamdomColor(),
+                    color: randomColor(),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: ListTile(
+                        onTap: () async {
+                          final EditData? editedData = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      EditScreen(note: filteredNotes[index])));
+                          if (editedData != null) {
+                            setState(() {
+                              int originalIndex =
+                                  sampleNotes.indexOf(filteredNotes[index]);
+
+                              sampleNotes[originalIndex] = Note(
+                                  id: originalIndex,
+                                  title: editedData.title,
+                                  content: editedData.content,
+                                  modifiedTime: DateTime.now());
+
+                              filteredNotes[index] = Note(
+                                id: filteredNotes[index].id,
+                                title: editedData.title,
+                                content: editedData.content,
+                                modifiedTime: DateTime.now()
+                              );
+                            });
+                          }
+                        },
                         title: RichText(
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
@@ -140,7 +179,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         trailing: IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            deleteNote(index);
+                          },
                           icon: const Icon(Icons.delete),
                         ),
                       ),
@@ -151,7 +192,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           )),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          final EditData? editedData = await Navigator.push<EditData>(context,
+              MaterialPageRoute<EditData>(builder: (BuildContext context) {
+            return const EditScreen();
+          }));
+
+          if (editedData != null) {
+            setState(() {
+              sampleNotes.add(Note(
+                id: sampleNotes.length,
+                title: editedData.title,
+                content: editedData.content,
+                modifiedTime: DateTime.now(),
+              ));
+              filteredNotes = sampleNotes;
+            });
+          }
+          // if (result[1] != null) {
+          //   setState(() {
+          //     sampleNotes.add(
+          //         Note(id: sampleNotes.length, title: result[0], content:
+          //         result[1],
+          //             modifiedTime: DateTime.now())
+          //     );
+          //     sampleNotes = filteredNotes;
+          //   });
+        },
         elevation: 10,
         backgroundColor: Colors.grey.shade800,
         child: Icon(
