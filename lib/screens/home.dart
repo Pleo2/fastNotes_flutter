@@ -209,15 +209,6 @@ class _HomeScreenState extends State<HomeScreen> {
               filteredNotes = sampleNotes;
             });
           }
-          // if (result[1] != null) {
-          //   setState(() {
-          //     sampleNotes.add(
-          //         Note(id: sampleNotes.length, title: result[0], content:
-          //         result[1],
-          //             modifiedTime: DateTime.now())
-          //     );
-          //     sampleNotes = filteredNotes;
-          //   });
         },
         elevation: 10,
         backgroundColor: Colors.grey.shade800,
